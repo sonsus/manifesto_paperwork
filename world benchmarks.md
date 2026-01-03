@@ -22,6 +22,8 @@ gemini: alfworld/textworld, vending bench, baby bench의 공통점과 차이점
 ## 기 수행벤치
 - [x] ## LLM babybench (현재 수행 벤치)
 	- https://www.themoonlight.io/paper/share/6e76b3ab-a372-4e59-90c1-f5054bf6bfa0 
+	- grounded reasoning
+	- plan predict decompose
 - [x]  Vending bench (현재 수행 벤치)
 
 ## 미탐험 벤치 (Related works 방향잡기)

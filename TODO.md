@@ -1,10 +1,15 @@
 - 이해하기 [[Manifesto Landscape]]
 	- [ ] manifesto 여태까지 문서 다 시간 역순으로 읽고
 		- [ ] 코드까지 연결되도록 이해
+	- [ ] dev.to
+		- [ ] https://dev.to/eggp
 	- [ ] 실험 내용들 이해하기
-		- 코드 / 논문
+		- 실험리포트
 			- [ ] LLM Babybench
 			- [ ] Vending Bench
+		- 벤치마크
+			- [x] Vending Bench
+			- [ ] LLM Babybench (WIP)
 - World Model에 대한 독자들의 기대를 파악하기 위해
 	- [ ] Dreamer V3 읽고 이해하기
 	- [ ] [[world benchmarks]] 읽고 읽을거리 더 수집하기

@@ -1,0 +1,12 @@
+- 이해하기 [[Manifesto Landscape]]
+	- [ ] manifesto 여태까지 문서 다 시간 역순으로 읽고
+		- [ ] 코드까지 연결되도록 이해
+	- [ ] 실험 내용들 이해하기
+		- 코드 / 논문
+			- [ ] LLM Babybench
+			- [ ] Vending Bench
+- World Model에 대한 독자들의 기대를 파악하기 위해
+	- [ ] Dreamer V3 읽고 이해하기
+	- [ ] [[world benchmarks]] 읽고 읽을거리 더 수집하기
+- [ ] 위를 기반으로 강력한 논지 만들기
+- [ ] ICML 포맷으로 라이팅

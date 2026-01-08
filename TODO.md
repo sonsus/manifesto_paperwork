@@ -1,4 +1,5 @@
-- 이해하기 [[Manifesto Landscape]]
+지난 버전 (WCAA?)
+- 이해하기 Manifesto Landscape
 	- [ ] manifesto 여태까지 문서 다 시간 역순으로 읽고
 		- [ ] 코드까지 연결되도록 이해
 	- [ ] dev.to
@@ -7,11 +8,16 @@
 		- 실험리포트
 			- [ ] LLM Babybench
 			- [ ] Vending Bench
+			- [x] [[TaskBench]]
+			- [ ] 
 		- 벤치마크
 			- [x] Vending Bench
 			- [ ] LLM Babybench (WIP)
 - World Model에 대한 독자들의 기대를 파악하기 위해
 	- [ ] Dreamer V3 읽고 이해하기
-	- [ ] [[world benchmarks]] 읽고 읽을거리 더 수집하기
+	- [ ] [[0_(world)_benchmarks]] 읽고 읽을거리 더 수집하기
 - [ ] 위를 기반으로 강력한 논지 만들기
 - [ ] ICML 포맷으로 라이팅
+
+2026-01-05 버전 compiler
+- Eliza를 비롯한 GOFAI로 포장하기 물론 이 내용이 WCAA라고 빠질 이유는 없지만...

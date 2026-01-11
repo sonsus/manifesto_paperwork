@@ -15,6 +15,10 @@
 			- [ ] LLM Babybench (WIP)
 - World Model에 대한 독자들의 기대를 파악하기 위해
 	- [ ] Dreamer V3 읽고 이해하기
+	- [x] SIMA2 -- generative world model
+		- [x] [[XXII. Programming a Computer for Playing Chess1 By CLAUDE E. SHANNON 1950]]
+		- [x] [[Some Studies in Machine Learning Using the Game of Checkers By Samuel 1959]]
+		- [x] turing 1953이 에이전트 연구로 지목되어 있는데, 원문접근은 어려워보임
 	- [ ] [[0_(world)_benchmarks]] 읽고 읽을거리 더 수집하기
 - [ ] 위를 기반으로 강력한 논지 만들기
 - [ ] ICML 포맷으로 라이팅

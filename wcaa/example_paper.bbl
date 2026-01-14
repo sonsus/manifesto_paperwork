@@ -1,0 +1,72 @@
+\begin{thebibliography}{11}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[{DeepMind SIMA Team}(2024)]{deepmind2024sima2}
+{DeepMind SIMA Team}.
+\newblock Scaling instructable agents across many simulated worlds.
+\newblock \emph{arXiv preprint arXiv:2404.10179}, 2024.
+
+\bibitem[{DeepMind Team}(2024)]{deepmind2024sima}
+{DeepMind Team}.
+\newblock {SIMA}: A scalable instructable multiworld agent.
+\newblock \emph{arXiv preprint}, 2024.
+
+\bibitem[Hafner et~al.(2023)Hafner, Pasukonis, Ba, and
+  Lillicrap]{hafner2023dreamerv3}
+Hafner, D., Pasukonis, J., Ba, J., and Lillicrap, T.
+\newblock Mastering diverse domains through world models.
+\newblock \emph{arXiv preprint arXiv:2301.04104}, 2023.
+
+\bibitem[Hao et~al.(2024)]{hao2024llmbabybench}
+Hao, S. et~al.
+\newblock {LLM-BabyBench}: Evaluating large language models on simple tasks.
+\newblock \emph{arXiv preprint}, 2024.
+
+\bibitem[Samuel(1959)]{samuel1959checkers}
+Samuel, A.~L.
+\newblock Some studies in machine learning using the game of checkers.
+\newblock \emph{IBM Journal of Research and Development}, 3\penalty0
+  (3):\penalty0 210--229, 1959.
+
+\bibitem[Shannon(1950)]{shannon1950chess}
+Shannon, C.~E.
+\newblock Programming a computer for playing chess.
+\newblock \emph{The London, Edinburgh, and Dublin Philosophical Magazine and
+  Journal of Science}, 41\penalty0 (314):\penalty0 256--275, 1950.
+
+\bibitem[{VendingBench Authors}(2024)]{vendingbench2024}
+{VendingBench Authors}.
+\newblock {VendingBench}: A benchmark for long-horizon agent decision making.
+\newblock \emph{arXiv preprint}, 2024.
+
+\bibitem[Wei et~al.(2022)]{wei2022chainofthought}
+Wei, J. et~al.
+\newblock Chain-of-thought prompting elicits reasoning in large language
+  models.
+\newblock \emph{Advances in Neural Information Processing Systems},
+  35:\penalty0 24824--24837, 2022.
+
+\bibitem[Weizenbaum(1966)]{weizenbaum1966eliza}
+Weizenbaum, J.
+\newblock {ELIZA}---a computer program for the study of natural language
+  communication between man and machine.
+\newblock \emph{Communications of the ACM}, 9\penalty0 (1):\penalty0 36--45,
+  1966.
+
+\bibitem[Xi et~al.(2024)]{xi2024agentgym}
+Xi, Z. et~al.
+\newblock {AgentGym}: Evolving large language model-based agents across diverse
+  environments.
+\newblock \emph{arXiv preprint arXiv:2406.04151}, 2024.
+
+\bibitem[Yao et~al.(2024)]{yao2024tree}
+Yao, S. et~al.
+\newblock Tree of thoughts: Deliberate problem solving with large language
+  models.
+\newblock \emph{Advances in Neural Information Processing Systems}, 36, 2024.
+
+\end{thebibliography}

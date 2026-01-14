@@ -1,5 +1,7 @@
 # PRD — Manifesto Core v1.0 Validation via LLM-BabyBench (v0.1)
 
+[← README](README.md)
+
 ## 1) 목적 (Purpose)
 
 Manifesto Core v1.0의 런타임(계산/실행/변경/설명)이 **실제 벤치마크 환경에서 성능을 끌어올릴 수 있는지**를 실증한다.

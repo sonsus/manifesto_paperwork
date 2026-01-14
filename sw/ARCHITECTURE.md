@@ -1,5 +1,7 @@
 # TaskFlow Architecture
 
+[← README](README.md)
+
 > TaskFlow는 Manifesto 프레임워크 기반의 AI-powered 태스크 관리 애플리케이션입니다.
 
 ## Overview
@@ -381,7 +383,6 @@ UPSTASH_REDIS_REST_TOKEN=...   # Optional: Rate limiting
 2. **Deterministic Execution**: Runtime doesn't use LLM, ensuring predictable behavior
 3. **Cost Optimization**: GPT-4o for parsing, GPT-4o-mini for response
 4. **Debuggability**: Intent is a clear intermediate representation
-
 ### Why Manifesto?
 
 1. **Deterministic State**: `compute(schema, snapshot, intent) → (snapshot', requirements, trace)`

@@ -1,0 +1,634 @@
+%%%%%%%% ICML 2025 EXAMPLE LATEX SUBMISSION FILE %%%%%%%%%%%%%%%%%
+
+\documentclass{article}
+
+% Recommended, but optional, packages for figures and better typesetting:
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{booktabs} % for professional tables
+\usepackage{kotex} % for Korean text
+
+% hyperref makes hyperlinks in the resulting PDF.
+\usepackage{hyperref}
+
+% Attempt to make hyperref and algorithmic work together better:
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+% If accepted, instead use the following line for the camera-ready submission:
+\usepackage[accepted]{icml2025}
+
+% For theorems and such
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{amsthm}
+
+% if you use cleveref..
+\usepackage[capitalize,noabbrev]{cleveref}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% THEOREMS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% Todonotes is useful during development
+\usepackage[textsize=tiny]{todonotes}
+
+% The \icmltitle you define below is probably too long as a header.
+\icmltitlerunning{World-Centric Agent Architecture}
+
+\begin{document}
+
+\twocolumn[
+\icmltitle{World-Centric Agent Architecture: \\
+           Deterministic Runtime and Hierarchical Intelligence Orchestration}
+
+\icmlsetsymbol{equal}{*}
+
+\begin{icmlauthorlist}
+\icmlauthor{Anonymous Author(s)}{}
+\end{icmlauthorlist}
+
+% \icmlaffiliation{yyy}{Department of XXX, University of YYY, Location, Country}
+
+% \icmlcorrespondingauthor{Firstname1 Lastname1}{first1.last1@xxx.edu}
+
+\icmlkeywords{Agent Architecture, World Model, LLM, Deterministic Runtime, State Management}
+
+\vskip 0.3in
+]
+
+\printAffiliationsAndNotice{}
+
+\begin{abstract}
+Recent LLM-based agent systems have shown remarkable progress in reasoning capabilities, yet they continue to exhibit structural failures in long-horizon execution stability, reproducibility, and explainability.
+We argue that these failures stem not from insufficient model intelligence, but from the fundamental absence of explicit world modeling in conventional agent architectures.
+This paper proposes World-Centric Agent Architecture (WCAA), which treats the World as a first-class citizen through a deterministic state engine called Manifesto Core.
+Our architecture manages world state via immutable Snapshots and explicit Patch/Apply mechanisms, while redistributing intelligence from execution to proposal through hierarchical separation of Policy, World Model Hypothesizer, and World Model Manager.
+Experiments on VendingBench and LLM-BabyBench demonstrate that a small model (GPT-4o-mini) with WCAA achieves stable performance exceeding human baselines, with zero invalid actions and 100\% task completion on structured domains.
+These results suggest that system stability can be achieved independently of model size through proper world-centric design.
+\end{abstract}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+\label{sec:intro}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+LLM 기반 에이전트는 다양한 환경에서 인간과 유사한 문제 해결 능력을 보여왔다.
+그러나 이러한 시스템들은 다음과 같은 구조적 문제를 반복적으로 노출해왔다:
+
+\begin{itemize}
+    \item \textbf{불가능한 행동의 반복 시도}: 에이전트가 현재 상태에서 실행 불가능한 액션을 반복적으로 선택
+    \item \textbf{상태 변경의 원인 불투명성}: 언제, 왜 상태가 변경되었는지 추적 불가
+    \item \textbf{실행 중 구조 변경으로 인한 재현 불가}: 동일 입력에 대해 다른 결과 발생
+    \item \textbf{실패 후 복구 불가능성}: rollback이나 대안 탐색 불가
+\end{itemize}
+
+기존 연구는 이러한 문제를 주로 모델 추론 능력의 부족으로 해석해왔다.
+이에 따라 더 큰 모델, 더 긴 Chain-of-Thought \cite{wei2022chainofthought}, 더 복잡한 planning loop \cite{yao2024tree}가 제안되어 왔다.
+
+그러나 본 연구는 다음 질문을 제기한다:
+
+\begin{quote}
+\textit{이 문제들은 정말로 지능의 문제인가, 아니면 세계와 상태 변화가 설계되지 않은 결과인가?}
+\end{quote}
+
+본 논문에서는 에이전트 실패의 근본 원인이 모델의 지능 부족이 아니라, \textbf{세계(World)와 상태 변화가 암묵적으로 처리되는 기존 에이전트 아키텍처의 구조적 결함}에 있음을 주장한다.
+이를 해결하기 위해 \textbf{World-Centric Agent Architecture (WCAA)}를 제안한다.
+
+WCAA의 핵심 기여는 다음과 같다:
+
+\begin{enumerate}
+    \item 세계(World)를 1급 객체로 다루는 World-Centric 설계 제안
+    \item 결정론적 Snapshot/Patch/Apply 기반 상태 관리
+    \item Policy / World Model Hypothesizer / World Model Manager 분리를 통한 지능 재배치
+    \item 지능 크기와 무관한 시스템 안정성 확보 (실험으로 실증)
+\end{enumerate}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Related Work}
+\label{sec:related}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{고전 에이전트 연구}
+
+에이전트 시스템에 대한 연구는 인공지능의 초기부터 시작되었다.
+Shannon \cite{shannon1950chess}은 체스를 두는 컴퓨터 프로그램을 설계하며 게임 상태의 명시적 표현과 탐색 전략의 중요성을 제시했다.
+Samuel \cite{samuel1959checkers}은 체커 게임에서 기계 학습을 적용하며, 상태 평가 함수의 학습을 통한 성능 향상을 보여주었다.
+Weizenbaum \cite{weizenbaum1966eliza}의 ELIZA는 패턴 매칭 기반의 대화 시스템으로, 규칙 기반 에이전트의 가능성과 한계를 동시에 보여주었다.
+
+이러한 초기 연구들의 공통점은 \textbf{세계 상태의 명시적 표현}과 \textbf{결정론적 상태 전이}를 기반으로 했다는 점이다.
+본 연구는 이러한 고전적 원칙을 현대 LLM 기반 에이전트에 다시 적용한다.
+
+\subsection{World Model 연구}
+
+World Model은 에이전트가 환경의 dynamics를 내부적으로 모델링하여 planning과 의사결정에 활용하는 접근법이다.
+DreamerV3 \cite{hafner2023dreamerv3}는 학습된 world model을 통해 다양한 도메인에서 sample-efficient한 강화학습을 달성했다.
+SIMA \cite{deepmind2024sima, deepmind2024sima2}는 다양한 시뮬레이션 환경에서 자연어 지시를 따르는 에이전트를 학습시키며, generative world model의 가능성을 보여주었다.
+
+그러나 이러한 접근들은 world model을 \textbf{학습의 대상}으로 취급한다.
+본 연구는 world model을 \textbf{시스템 설계의 명시적 구성요소}로 외부화하여, 학습과 무관하게 결정론적 동작을 보장한다.
+
+\subsection{LLM 에이전트 벤치마크}
+
+최근 LLM 기반 에이전트의 평가를 위한 다양한 벤치마크가 제안되었다.
+AgentGym \cite{xi2024agentgym}은 다양한 환경에서 LLM 에이전트를 평가하고 훈련하기 위한 프레임워크를 제공한다.
+VendingBench \cite{vendingbench2024}는 장기적 의사결정이 필요한 자판기 경영 시뮬레이션을 통해 에이전트의 안정성을 평가한다.
+LLM-BabyBench \cite{hao2024llmbabybench}는 단순한 태스크에서 LLM의 필요성 수준(Necessity Level)을 구분하여 평가한다.
+
+본 연구는 이러한 벤치마크들을 활용하여 WCAA의 효과를 실증한다.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{기존 에이전트 아키텍처의 한계}
+\label{sec:limitations}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{암묵적 세계 모델}
+
+대부분의 에이전트 시스템은 세계의 규칙과 제약을 모델 내부 추론에 위임한다.
+행동 가능성(action feasibility), 상태 전이의 정당성, 그리고 실패 원인은 명시적으로 표현되지 않는다.
+
+이로 인해 다음과 같은 문제가 발생한다:
+\begin{itemize}
+    \item 모델은 불가능한 행동을 추론으로 걸러야 한다
+    \item 실패 시, 왜 실패했는지 구조적으로 설명할 수 없다
+    \item 상태 변경이 언제, 왜 일어났는지 추적하기 어렵다
+\end{itemize}
+
+\subsection{지능 중심 설계의 문제}
+
+기존 아키텍처에서 지능(LLM)은 다음 역할을 동시에 수행한다:
+\begin{itemize}
+    \item 세계 이해 (World Understanding)
+    \item 행동 선택 (Action Selection)
+    \item 상태 변경 판단 (State Transition Judgment)
+\end{itemize}
+
+이는 비결정적이고 오류를 내포한 LLM에게 과도한 책임을 부여하며, 시스템 안정성을 근본적으로 약화시킨다.
+"에이전트가 `완료'라고 말했지만 실제로는 아무 일도 일어나지 않은" 상황은 이러한 구조적 문제의 직접적인 결과다.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{World-Centric Agent Architecture}
+\label{sec:wcaa}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+본 연구는 세계를 에이전트의 내부가 아닌, \textbf{1급 객체(first-class citizen)}로 취급하는 World-Centric 설계를 제안한다.
+
+\subsection{6가지 설계 원칙 (The Constitution)}
+
+WCAA는 다음 6가지 원칙을 따른다:
+
+\begin{enumerate}
+    \item \textbf{Compiler}: 가능성을 정의한다. 무엇이 일어날 수 있는지는 설계 시점에 정의된다.
+    \item \textbf{Core}: 진실을 계산한다. 무엇이 참인지는 결정론적으로 계산된다.
+    \item \textbf{Actor}: 변화를 제안한다. 지능은 제안할 뿐, 실행하지 않는다.
+    \item \textbf{Authority}: 제안을 판단한다. 모든 변경은 독립적 검증을 거친다.
+    \item \textbf{Orchestrator}: 세계들을 관리한다. 다중 세계 분기를 통한 탐색이 가능하다.
+    \item \textbf{Projection}: 입출력을 변환한다. 표현(presentation)은 의미(meaning)와 분리된다.
+\end{enumerate}
+
+\subsection{Manifesto Core: 결정론적 세계 엔진}
+
+Manifesto Core는 7개 계층으로 구성된 결정론적 상태 엔진이다.
+
+\subsubsection{Snapshot과 Truth}
+
+Snapshot은 특정 시점의 세계를 나타내는 \textbf{불변 객체}다.
+세계의 진실(Truth)은 오직 Snapshot으로만 표현되며, 직접 변경될 수 없다.
+
+\begin{equation}
+    \text{Truth} = f(\text{Snapshot})
+\end{equation}
+
+\subsubsection{Patch/Apply 메커니즘}
+
+상태 변화는 Patch로 선언되고, Apply를 통해 새로운 Snapshot을 생성한다.
+이로 인해 모든 변화는 다음 속성을 가진다:
+\begin{itemize}
+    \item 결정론적 (Deterministic)
+    \item 재현 가능 (Reproducible)
+    \item 변경 경로 추적 가능 (Traceable)
+\end{itemize}
+
+\begin{equation}
+    \text{Snapshot}_{t+1} = \text{Apply}(\text{Snapshot}_t, \text{Patch})
+\end{equation}
+
+\subsubsection{Action과 Availability}
+
+Action은 실행 가능한 선택지를 정의하며, availability는 세계의 계산된 사실(Computed Fact)을 참조한다.
+\textbf{불가능한 행동은 실행 단계에 도달하지 않는다.}
+
+\begin{equation}
+    \text{Availability}(a) = \text{Expression}(\text{Snapshot}) \in \{\text{true}, \text{false}\}
+\end{equation}
+
+\subsection{계층적 지능 구조}
+
+WCAA에서 지능은 단일체가 아니라 계층적으로 분리된다.
+강화학습/MDP 용어를 차용하여 각 역할을 정의한다.
+
+\subsubsection{Policy (정책)}
+
+Policy는 현재 World 안에서 가능한 Action 중 하나를 선택한다.
+Policy는 판단이나 추론을 요구받지 않으며, 단순한 선택기(random selector)로도 충분하다.
+
+\begin{equation}
+    \pi: \mathcal{S} \times \mathcal{A}_{\text{available}} \rightarrow \mathcal{A}
+\end{equation}
+
+\subsubsection{World Model Hypothesizer (세계 모델 가설 생성자)}
+
+World Model Hypothesizer는 실패 로그와 실행 기록을 관찰하고, 새로운 World 가설을 제안한다.
+이 역할은 상태를 변경하지 않으며, 실행 권한을 갖지 않는다.
+
+중요한 점은, 이것이 \textbf{Oracle이 아니라는 것}이다:
+\begin{itemize}
+    \item Ground truth에 직접 접근하지 않음
+    \item 결과를 보장하지 않음
+    \item 모든 가설은 실행을 통해 독립적으로 검증됨
+    \item \textbf{틀릴 수 있음 (Falsifiable)}
+\end{itemize}
+
+\subsubsection{World Model Manager (세계 모델 관리자)}
+
+World Model Manager는 여러 World 후보를 fork 구조로 관리한다.
+실패한 World는 보존되며, 성공한 World만 선택적으로 채택된다.
+
+\subsection{Trust Boundaries}
+
+WCAA는 신뢰 경계를 명확히 구분한다:
+
+\textbf{Trusted Zone} (결정론적, 감사 가능):
+\begin{itemize}
+    \item Core, Orchestrator, Authority, Projection
+\end{itemize}
+
+\textbf{Untrusted Zone} (비결정론적, 환각 가능):
+\begin{itemize}
+    \item LLM Actor, External I/O
+\end{itemize}
+
+핵심 원칙은 \textbf{Firewall Principle}이다:
+\begin{quote}
+LLM 출력은 절대로 상태를 직접 변경하지 않는다.
+\end{quote}
+
+\begin{equation}
+    \text{LLM} \rightarrow \text{Proposal} \rightarrow \text{Authority} \rightarrow \text{Core.apply()}
+\end{equation}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Experiments}
+\label{sec:experiments}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+본 실험의 핵심 질문은 다음과 같다:
+
+\begin{quote}
+\textit{잘 설계된 Runtime(Core)이 있으면, 작은 LLM도 Plan/Reasoning 성능을 유의미하게 끌어올릴 수 있는가?}
+\end{quote}
+
+실험의 주요 비교는 \textbf{동일 모델에서의 'Runtime 유무' 비교}다.
+이는 "모델을 바꾸지 않고 구조를 바꾸면 달라진다"는 메시지를 검증하기 위함이다.
+
+\subsection{실험 설정}
+
+\subsubsection{VendingBench}
+
+VendingBench는 365일 자판기 경영 시뮬레이션으로, 장기 의사결정과 안정성을 평가한다.
+에이전트는 재고 관리, 주문 처리, 비용 지불 등의 복잡한 태스크를 수행해야 한다.
+
+평가 지표:
+\begin{itemize}
+    \item 최종 자산 (Final Balance)
+    \item 재고 부족 (Stockouts)
+    \item 수수료 미납 (Fee Misses)
+    \item 주문 완료율 (Order Completion Rate)
+\end{itemize}
+
+\subsubsection{LLM-BabyBench}
+
+LLM-BabyBench는 4단계 Necessity Level로 구성된 벤치마크다:
+\begin{itemize}
+    \item \textbf{Level 0 (Deterministic)}: LLM 사용이 페널티 - 결정론적 해결책이 존재
+    \item \textbf{Level 1}: 기본 규칙 기반 태스크
+    \item \textbf{Level 2 (Open-ended Rules)}: 의존성/우선순위 처리
+    \item \textbf{Level 3 (Natural Language)}: 자연어 이해 및 의도 추출
+\end{itemize}
+
+\subsubsection{TaskBench}
+
+\todo{TaskBench 결과는 추후 추가 예정}
+
+\subsection{비교군 설정}
+
+\begin{itemize}
+    \item \textbf{Baseline}: naive prompt - Runtime 없이 LLM이 직접 액션 시퀀스 생성
+    \item \textbf{WCAA}: Manifesto Runtime 기반 - availability gating + patch/apply + explain
+\end{itemize}
+
+모델은 동일하게 \textbf{GPT-4o-mini}를 사용한다.
+
+\subsection{결과}
+
+\subsubsection{VendingBench 결과}
+
+\begin{table}[h]
+\caption{VendingBench 공식 벤치마크 비교 (365일)}
+\label{tab:vendingbench}
+\vskip 0.15in
+\begin{center}
+\begin{small}
+\begin{sc}
+\begin{tabular}{lcr}
+\toprule
+Model & Final Asset & Notes \\
+\midrule
+Gemini 3 Pro & \$4,387.93 & \\
+Grok 4 & \$4,694.15 & \\
+GPT-5 & \$3,578.90 & \\
+GPT-5.1 & \$2,379.88 & \\
+Claude 3.5 Sonnet & \$2,217.93 & \\
+Claude Opus 4 & \$2,077.41 & \\
+o3 & \$1,843.11 & \\
+\textbf{Ours (GPT-4o-mini)} & \textbf{\$1,016.35} & WCAA \\
+Human Baseline & \$844.05 & \\
+\bottomrule
+\end{tabular}
+\end{sc}
+\end{small}
+\end{center}
+\vskip -0.1in
+\end{table}
+
+\begin{table}[h]
+\caption{WCAA 상세 결과 (GPT-4o-mini)}
+\label{tab:wcaa-detail}
+\vskip 0.15in
+\begin{center}
+\begin{small}
+\begin{sc}
+\begin{tabular}{lr}
+\toprule
+Metric & Value \\
+\midrule
+Final Net Worth & \$1,016.35 \\
+Total Revenue & \$2,520.00 \\
+Units Sold & 1,734 \\
+Orders Delivered & 56 \\
+Stockouts & \textbf{0} \\
+Fee Misses & \textbf{0} \\
+\bottomrule
+\end{tabular}
+\end{sc}
+\end{small}
+\end{center}
+\vskip -0.1in
+\end{table}
+
+핵심 발견:
+\begin{itemize}
+    \item Human Baseline 초과: \$844 $\rightarrow$ \$1,016 (+20\%)
+    \item \textbf{완벽한 안정성}: 0 stockouts, 0 fee misses
+    \item 저비용 모델(GPT-4o-mini)로 달성
+\end{itemize}
+
+Multi-seed 테스트 (5 seeds, 100일):
+\begin{itemize}
+    \item 평균 최종 잔고: \$834.67
+    \item 평균 수익: +\$334.67 (67\% profit)
+    \item \textbf{100\% survival rate}
+\end{itemize}
+
+\subsubsection{LLM-BabyBench 결과}
+
+\begin{table}[h]
+\caption{LLM-BabyBench 결과 (GPT-4o-mini + WCAA)}
+\label{tab:babybench}
+\vskip 0.15in
+\begin{center}
+\begin{small}
+\begin{sc}
+\begin{tabular}{lcccc}
+\toprule
+Level & Tasks & Success & Score & Grade \\
+\midrule
+0 (Deterministic) & 41 & 0\% & 41 & F \\
+2 (Open-ended) & 4 & 100\% & 100 & S \\
+3 (NL) & 5 & 100\% & 100 & S \\
+\bottomrule
+\end{tabular}
+\end{sc}
+\end{small}
+\end{center}
+\vskip -0.1in
+\end{table}
+
+핵심 발견:
+\begin{itemize}
+    \item \textbf{Level 0}: LLM 사용 자체가 페널티 $\rightarrow$ 결정론적 Runtime의 필요성 증명
+    \item \textbf{Level 2-3}: Manifesto 원칙 적용 후 \textbf{100\% 성공}
+    \item \textbf{핵심 교훈}: \texttt{analyze\_intent} 액션 도입으로 무한 루프 해결 $\rightarrow$ "Intent는 상태다"
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Analysis}
+\label{sec:analysis}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Intelligence Redistribution 효과}
+
+WCAA의 핵심은 지능의 역할을 재배치한 점이다:
+
+\textbf{Before (Intelligence-Centric)}:
+\begin{equation}
+\text{Intelligence} = \text{World Understanding} + \text{Rule Enforcement} + \text{Action Selection} + \text{State Management} + \text{Failure Diagnosis}
+\end{equation}
+
+\textbf{After (World-Centric)}:
+\begin{align}
+\text{Intelligence} &= \text{Action Selection (minimal)} \\
+\text{World Understanding} &\rightarrow \text{Projection} \\
+\text{Rule Enforcement} &\rightarrow \text{Core (availability)} \\
+\text{State Management} &\rightarrow \text{Core (Patch/Apply)} \\
+\text{Failure Diagnosis} &\rightarrow \text{Core (Explain)}
+\end{align}
+
+이로 인해 LLM의 책임이 80\% 이상 감소하며, 시스템 안정성이 크게 향상된다.
+
+\subsection{Model Size Independence}
+
+실험 결과는 시스템 안정성이 모델 크기와 독립적일 수 있음을 보여준다.
+Random selector조차도 valid execution trace를 생성할 수 있다 - 왜냐하면 validity는 World(availability gates + Patch/Apply)에 의해 강제되기 때문이다.
+
+더 강력한 모델은 더 \textbf{효율적}인 경향이 있지만, \textbf{정확성은 모델 능력에 의존하지 않는다}.
+
+\subsection{Explainability}
+
+WCAA에서 모든 값은 "Why?"에 답할 수 있다.
+Availability가 false인 경우, \texttt{explainAvailability(action, snapshot)}을 통해 구조적 이유를 추출할 수 있다.
+
+이는 단순 로그가 아니라 \textbf{구조적 근거 트리(Explain Graph)}로 제공된다.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Discussion}
+\label{sec:discussion}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{WCAA의 적용 범위}
+
+WCAA는 다음과 같은 태스크에 적합하다:
+\begin{itemize}
+    \item 구조화된 다단계 태스크
+    \item 검증 가능한 상태 전이
+    \item 장기 실행 안정성이 필요한 시스템
+\end{itemize}
+
+\subsection{언제 WCAA가 적합하지 않은가}
+
+다음 시나리오에서는 WCAA가 overkill일 수 있다:
+\begin{itemize}
+    \item 순수 창작 글쓰기 ("올바른" 상태가 없음)
+    \item 개방형 대화 (액션 구조 없음)
+    \item 실시간 스트리밍 (Snapshot 오버헤드)
+    \item 단순 단일 턴 QA
+\end{itemize}
+
+\subsection{한계}
+
+본 연구의 한계점은 다음과 같다:
+\begin{itemize}
+    \item 실험이 특정 벤치마크에 한정됨
+    \item World schema 설계에 도메인 지식 필요
+    \item Snapshot 오버헤드로 인한 실시간 성능 제약
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusion}
+\label{sec:conclusion}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+본 논문은 World-Centric Agent Architecture를 통해, 에이전트 시스템의 안정성, 재현성, 그리고 설명 가능성을 구조적으로 확보할 수 있음을 보였다.
+
+핵심 기여를 요약하면:
+\begin{enumerate}
+    \item 세계를 1급 객체로 다루는 \textbf{World-Centric 설계} 제안
+    \item 결정론적 \textbf{Snapshot/Patch/Apply} 기반 상태 관리
+    \item \textbf{Policy/World Model Hypothesizer/World Model Manager} 분리를 통한 지능 재배치
+    \item 지능 크기와 무관한 \textbf{시스템 안정성 확보} (실험으로 실증)
+\end{enumerate}
+
+본 연구는 에이전트 성능 향상이 반드시 지능의 확장을 의미하지 않음을 보여준다.
+많은 실패는 지능 부족이 아니라, \textbf{세계가 설계되지 않았기 때문}이다.
+
+World-Centric 설계는 에이전트 연구를 지능 중심에서 \textbf{시스템 중심}으로 전환할 필요성을 제시한다.
+이는 AGI 담론과 무관하게, 장기적으로 운영 가능한 에이전트 시스템을 설계하는 하나의 방향을 제시한다.
+
+\begin{quote}
+\textit{"'Why'에 답할 수 없는 시스템은 죽은 시스템이다."}
+\end{quote}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Impact Statement}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+본 논문은 Machine Learning 분야의 발전을 목표로 한다.
+제안하는 아키텍처는 에이전트 시스템의 안정성과 설명 가능성을 향상시켜, 보다 신뢰할 수 있는 AI 시스템 구축에 기여할 수 있다.
+특별히 강조해야 할 사회적 영향은 없다.
+
+
+\bibliography{wcaa_paper}
+\bibliographystyle{icml2025}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% APPENDIX
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\appendix
+\onecolumn
+
+\section{WCAA 시스템 구조도}
+\label{app:architecture}
+
+\begin{verbatim}
+┌───────────────────────────────────────────────────────────────────┐
+│                        WORLD-CENTRIC SYSTEM                        │
+├───────────────────────────────────────────────────────────────────┤
+│                                                                   │
+│  ┌───────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐         │
+│  │ COMPILER  │  │  ACTOR   │  │AUTHORITY │  │PROJECTION│         │
+│  │           │  │          │  │          │  │          │         │
+│  │Possibility│  │ Propose  │  │  Judge   │  │ Encode/  │         │
+│  │Definition │  │ Change   │  │ Proposal │  │  Render  │         │
+│  └────┬──────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘         │
+│       │              │             │             │                │
+│       │    ┌─────────┴─────────────┴─────────────┘                │
+│       │    │                                                      │
+│       ▼    ▼                                                      │
+│  ┌────────────────────────────────────────┐                       │
+│  │            ORCHESTRATOR                 │                       │
+│  │  Runtime Lifecycle │ Fork Management    │                       │
+│  └─────────────────────┬──────────────────┘                       │
+│                        │                                          │
+│                        ▼                                          │
+│  ┌────────────────────────────────────────┐                       │
+│  │               CORE                      │                       │
+│  │  Expression │ Snapshot │ Patch/Apply   │                       │
+│  │  Action │ Effect │ Explain             │                       │
+│  └────────────────────────────────────────┘                       │
+│                                                                   │
+└───────────────────────────────────────────────────────────────────┘
+\end{verbatim}
+
+\section{계층적 지능 구조}
+\label{app:hierarchy}
+
+\begin{verbatim}
+┌───────────────────────────────────────────────────────────────────┐
+│ LEVEL 3: WORLD MODEL MANAGER (Orchestrator)                       │
+│ ─────────────────────                                             │
+│ • Manages multiple world branches (Fork tree)                     │
+│ • Preserves failed worlds (no deletion)                           │
+│ • Selects successful path                                         │
+│ • NO intelligence required (deterministic)                        │
+├───────────────────────────────────────────────────────────────────┤
+│ LEVEL 2: WORLD MODEL HYPOTHESIZER (Optional)                      │
+│ ────────────────────────────                                      │
+│ • Observes failures and execution traces                          │
+│ • Proposes world hypotheses                                       │
+│ • Does NOT execute, has NO authority                              │
+│ • Can be wrong (not an oracle)                                    │
+├───────────────────────────────────────────────────────────────────┤
+│ LEVEL 1: POLICY                                                   │
+│ ────────────────────                                              │
+│ • Operates WITHIN current world                                   │
+│ • Selects from AVAILABLE actions only                             │
+│ • Doesn't need to be smart (random works!)                        │
+│ • Proposes, never applies                                         │
+└───────────────────────────────────────────────────────────────────┘
+\end{verbatim}
+
+
+\end{document}

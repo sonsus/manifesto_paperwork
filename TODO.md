@@ -20,8 +20,9 @@
 		- [x] [[Some Studies in Machine Learning Using the Game of Checkers By Samuel 1959]]
 		- [x] turing 1953이 에이전트 연구로 지목되어 있는데, 원문접근은 어려워보임
 	- [ ] [[0_(world)_benchmarks]] 읽고 읽을거리 더 수집하기
-- [ ] 위를 기반으로 강력한 논지 만들기
 - [ ] ICML 포맷으로 라이팅
 
 2026-01-05 버전 compiler
 - Eliza를 비롯한 GOFAI로 포장하기 물론 이 내용이 WCAA라고 빠질 이유는 없지만...
+
+

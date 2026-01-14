@@ -1,5 +1,7 @@
 # TRD — Manifesto Core v1.0 Validation via LLM-BabyBench (v0.1)
 
+[← README](README.md)
+
 > 목적: PRD의 요구사항을 구현 가능한 기술 요구로 구체화한다.
 > 핵심: **core-v1(define*/executeAction/EffectRuntime/Patch/Apply/DAG/Explain)** 위에 BabyBench를 올리는 **어댑터 + 러너 + 평가 하네스**를 만든다.
 > 모델은 의도적으로 **작은 모델(GPT-5-nano 또는 GPT-4o-mini)**를 사용한다.

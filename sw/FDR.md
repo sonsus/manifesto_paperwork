@@ -1,5 +1,7 @@
 # FDR — Manifesto Core v1.0 Validation via LLM-BabyBench (v0.1)
 
+[← README](README.md)
+
 ## 0. 문서 목적
 
 본 문서는 **Manifesto Core v1.0을 LLM-BabyBench로 실증하기 위한 근본 설계 결정(FDR)**을 기록한다.

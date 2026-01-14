@@ -1,5 +1,7 @@
 # SPEC — Manifesto Core v1.0 Validation via LLM-BabyBench (v0.1)
 
+[← README](README.md)
+
 > 본 SPEC은 **BabyBench 실증(v0.1)**을 위한 구현 계약을 고정한다.
 > 상위 근거 문서: **FDR — BabyBench Validation v0.1**
 > 목표: **작은 모델(GPT-5-nano 또는 GPT-4o-mini)** + Manifesto Runtime(Core)으로 **Plan 성능/안정성 개선**을 실증한다.
